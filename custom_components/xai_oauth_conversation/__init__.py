@@ -14,7 +14,7 @@ from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers import config_validation as cv, selector
 from homeassistant.helpers.typing import ConfigType
 
-from .const import CONF_MAX_OUTPUT_TOKENS, CONF_MODEL, CONF_PROMPT, DEFAULT_MAX_OUTPUT_TOKENS, DEFAULT_MODEL, DEFAULT_PROMPT, DOMAIN
+from .const import CONF_MAX_OUTPUT_TOKENS, CONF_MODEL, CONF_PROMPT, DEFAULT_MAX_OUTPUT_TOKENS, DEFAULT_MODEL, DEFAULT_PROMPT, DOMAIN, entry_setting
 from .xai_client import create_response, image_bytes_part, image_url_part, text_part
 
 PLATFORMS = (Platform.CONVERSATION,)
@@ -28,9 +28,9 @@ def _instructions(prompt: str, model: str) -> str:
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     async def generate_content(call: ServiceCall) -> ServiceResponse:
         entry = _get_entry(hass, call.data["config_entry"])
-        model = call.data.get(CONF_MODEL) or entry.data.get(CONF_MODEL, DEFAULT_MODEL)
-        system_prompt = entry.data.get(CONF_PROMPT, DEFAULT_PROMPT)
-        result = await create_response(hass, entry, model=model, instructions=_instructions(system_prompt, model), content=[text_part(call.data[CONF_PROMPT])], max_output_tokens=call.data.get(CONF_MAX_OUTPUT_TOKENS) or entry.data.get(CONF_MAX_OUTPUT_TOKENS, DEFAULT_MAX_OUTPUT_TOKENS))
+        model = call.data.get(CONF_MODEL) or entry_setting(entry, CONF_MODEL, DEFAULT_MODEL)
+        system_prompt = entry_setting(entry, CONF_PROMPT, DEFAULT_PROMPT)
+        result = await create_response(hass, entry, model=model, instructions=_instructions(system_prompt, model), content=[text_part(call.data[CONF_PROMPT])], max_output_tokens=call.data.get(CONF_MAX_OUTPUT_TOKENS) or entry_setting(entry, CONF_MAX_OUTPUT_TOKENS, DEFAULT_MAX_OUTPUT_TOKENS))
         return {"text": result.text}
 
     async def analyze_image(call: ServiceCall) -> ServiceResponse:
@@ -44,9 +44,9 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
             content.append(await _image_part_from_entity(hass, entity_id))
         if len(content) == 1:
             raise ServiceValidationError("Provide image_file, image_url, or entity_id")
-        model = call.data.get(CONF_MODEL) or entry.data.get(CONF_MODEL, DEFAULT_MODEL)
-        system_prompt = call.data.get("system_prompt") or entry.data.get(CONF_PROMPT, DEFAULT_PROMPT)
-        result = await create_response(hass, entry, model=model, instructions=_instructions(system_prompt, model), content=content, max_output_tokens=call.data.get(CONF_MAX_OUTPUT_TOKENS) or entry.data.get(CONF_MAX_OUTPUT_TOKENS, DEFAULT_MAX_OUTPUT_TOKENS))
+        model = call.data.get(CONF_MODEL) or entry_setting(entry, CONF_MODEL, DEFAULT_MODEL)
+        system_prompt = call.data.get("system_prompt") or entry_setting(entry, CONF_PROMPT, DEFAULT_PROMPT)
+        result = await create_response(hass, entry, model=model, instructions=_instructions(system_prompt, model), content=content, max_output_tokens=call.data.get(CONF_MAX_OUTPUT_TOKENS) or entry_setting(entry, CONF_MAX_OUTPUT_TOKENS, DEFAULT_MAX_OUTPUT_TOKENS))
         return {"response_text": result.text, "text": result.text}
 
     hass.services.async_register(DOMAIN, "generate_content", generate_content, schema=vol.Schema({vol.Required("config_entry"): selector.ConfigEntrySelector({"integration": DOMAIN}), vol.Required(CONF_PROMPT): str, vol.Optional(CONF_MODEL): str, vol.Optional(CONF_MAX_OUTPUT_TOKENS): int}), supports_response=SupportsResponse.ONLY)
@@ -55,8 +55,14 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    entry.async_on_unload(entry.add_update_listener(_async_update_listener))
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
+
+
+async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Reload the integration after its options change."""
+    await hass.config_entries.async_reload(entry.entry_id)
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:

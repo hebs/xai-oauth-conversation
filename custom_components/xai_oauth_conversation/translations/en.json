@@ -30,5 +30,14 @@
       "reconfigure_successful": "Settings updated.",
       "reauth_successful": "xAI OAuth authentication updated."
     }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Settings",
+        "description": "Update the assistant defaults.",
+        "data": {"name": "Name", "model": "Model", "prompt": "System prompt", "max_output_tokens": "Max output tokens"}
+      }
+    }
   }
 }

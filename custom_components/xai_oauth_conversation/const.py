@@ -4,6 +4,13 @@ from __future__ import annotations
 import logging
 
 DOMAIN = "xai_oauth_conversation"
+
+
+def entry_setting(entry, key: str, default):
+    """Return a user setting, preferring values saved by the options flow."""
+    return entry.options.get(key, entry.data.get(key, default))
+
+
 LOGGER = logging.getLogger(__package__)
 
 CONF_ACCESS_TOKEN = "access_token"

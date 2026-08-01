@@ -10,7 +10,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import intent
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import CONF_MAX_OUTPUT_TOKENS, CONF_MODEL, CONF_PROMPT, DEFAULT_MAX_OUTPUT_TOKENS, DEFAULT_MODEL, DEFAULT_PROMPT, DOMAIN
+from .const import CONF_MAX_OUTPUT_TOKENS, CONF_MODEL, CONF_PROMPT, DEFAULT_MAX_OUTPUT_TOKENS, DEFAULT_MODEL, DEFAULT_PROMPT, DOMAIN, entry_setting
 from .xai_client import create_response, create_tool_response, text_part
 
 
@@ -40,15 +40,15 @@ class XAIOAuthConversationEntity(conversation.ConversationEntity, conversation.A
         await super().async_will_remove_from_hass()
 
     async def _async_handle_message(self, user_input: conversation.ConversationInput, chat_log: conversation.ChatLog) -> conversation.ConversationResult:
-        model = self.entry.data.get(CONF_MODEL, DEFAULT_MODEL)
-        base_prompt = self.entry.data.get(CONF_PROMPT, DEFAULT_PROMPT)
+        model = entry_setting(self.entry, CONF_MODEL, DEFAULT_MODEL)
+        base_prompt = entry_setting(self.entry, CONF_PROMPT, DEFAULT_PROMPT)
         prompt = f"{base_prompt}\n\nCurrent backend model: {model}. If asked which model you use, answer with that exact model name."
         try:
             await chat_log.async_provide_llm_data(user_input.as_llm_context(DOMAIN), "assist", prompt, user_input.extra_system_prompt)
         except conversation.ConverseError as err:
             return err.as_conversation_result()
         instructions = chat_log.content[0].content if chat_log.content else prompt
-        max_tokens = self.entry.data.get(CONF_MAX_OUTPUT_TOKENS, DEFAULT_MAX_OUTPUT_TOKENS)
+        max_tokens = entry_setting(self.entry, CONF_MAX_OUTPUT_TOKENS, DEFAULT_MAX_OUTPUT_TOKENS)
         if chat_log.llm_api:
             result = await create_tool_response(self.hass, self.entry, model=model, instructions=instructions or prompt, user_text=user_input.text, llm_api=chat_log.llm_api, max_output_tokens=max_tokens)
         else:

@@ -7,7 +7,7 @@ from typing import Any
 import aiohttp
 import voluptuous as vol
 
-from homeassistant.config_entries import ConfigEntry, ConfigFlow, ConfigFlowResult
+from homeassistant.config_entries import ConfigEntry, ConfigFlow, ConfigFlowResult, OptionsFlow
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .const import CLIENT_ID, CONF_ACCESS_TOKEN, CONF_EXPIRES, CONF_MAX_OUTPUT_TOKENS, CONF_MODEL, CONF_PROMPT, CONF_REFRESH_TOKEN, CONF_TOKEN_ENDPOINT, DEFAULT_MAX_OUTPUT_TOKENS, DEFAULT_MODEL, DEFAULT_NAME, DEFAULT_PROMPT, DOMAIN, OAUTH_DISCOVERY_URL, OAUTH_SCOPE
@@ -35,7 +35,7 @@ class XAIOAuthConfigFlow(ConfigFlow, domain=DOMAIN):
         return self.async_show_form(step_id="user", data_schema=self._settings_schema())
 
     def _settings_schema(self, entry: ConfigEntry | None = None) -> vol.Schema:
-        data = entry.data if entry else {}
+        data = {**entry.data, **entry.options} if entry else {}
         return vol.Schema({
             vol.Optional("name", default=entry.title if entry else DEFAULT_NAME): str,
             vol.Optional(CONF_MODEL, default=data.get(CONF_MODEL, DEFAULT_MODEL)): str,
@@ -128,4 +128,23 @@ class XAIOAuthConfigFlow(ConfigFlow, domain=DOMAIN):
 
     @staticmethod
     def async_get_options_flow(config_entry: ConfigEntry):
-        return None
+        return XAIOAuthOptionsFlow()
+
+
+class XAIOAuthOptionsFlow(OptionsFlow):
+    """Allow changing the model and assistant defaults from the gear button."""
+
+    async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        if user_input is not None:
+            name = user_input.pop("name", self.config_entry.title)
+            self.hass.config_entries.async_update_entry(self.config_entry, title=name)
+            return self.async_create_entry(title="", data=user_input)
+
+        data = {**self.config_entry.data, **self.config_entry.options}
+        schema = vol.Schema({
+            vol.Optional("name", default=self.config_entry.title): str,
+            vol.Optional(CONF_MODEL, default=data.get(CONF_MODEL, DEFAULT_MODEL)): str,
+            vol.Optional(CONF_PROMPT, default=data.get(CONF_PROMPT, DEFAULT_PROMPT)): str,
+            vol.Optional(CONF_MAX_OUTPUT_TOKENS, default=data.get(CONF_MAX_OUTPUT_TOKENS, DEFAULT_MAX_OUTPUT_TOKENS)): int,
+        })
+        return self.async_show_form(step_id="init", data_schema=schema)
