@@ -23,6 +23,17 @@ CONF_MAX_OUTPUT_TOKENS = "max_output_tokens"
 
 DEFAULT_NAME = "xAI OAuth (Grok)"
 DEFAULT_MODEL = "grok-4.20-0309-reasoning"
+MODEL_OPTIONS = (
+    "grok-4.5-latest",
+    "grok-4.5",
+    "grok-4.3-latest",
+    "grok-4.3",
+    "grok-4.20-reasoning-latest",
+    "grok-4.20-non-reasoning-latest",
+    "grok-4.20-0309-reasoning",
+    "grok-4.20-0309-non-reasoning",
+    "grok-latest",
+)
 DEFAULT_PROMPT = "You are a helpful voice assistant for Home Assistant. Answer concisely and naturally."
 DEFAULT_MAX_OUTPUT_TOKENS = 1000
 

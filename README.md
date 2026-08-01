@@ -37,7 +37,7 @@ Copy `custom_components/xai_oauth_conversation` into `/config/custom_components/
 
 ## Configuration
 
-- **Model:** The exact xAI model ID. The default is `grok-4.20-0309-reasoning`. You may enter `grok-4.5` if it is available to your account.
+- **Model:** Choose a conversation-capable Grok model from the dropdown. Model availability depends on your xAI account. The default is `grok-4.20-0309-reasoning`.
 - **System prompt:** Instructions applied to conversation and service requests.
 - **Max output tokens:** A response ceiling. `2000` is a good general-purpose starting point; use `1000` for shorter voice replies or `4000` for longer reasoning tasks.
 

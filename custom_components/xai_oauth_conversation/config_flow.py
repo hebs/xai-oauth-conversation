@@ -9,11 +9,15 @@ import voluptuous as vol
 
 from homeassistant.config_entries import ConfigEntry, ConfigFlow, ConfigFlowResult, OptionsFlow
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.selector import SelectSelector, SelectSelectorConfig, SelectSelectorMode
 
-from .const import CLIENT_ID, CONF_ACCESS_TOKEN, CONF_EXPIRES, CONF_MAX_OUTPUT_TOKENS, CONF_MODEL, CONF_PROMPT, CONF_REFRESH_TOKEN, CONF_TOKEN_ENDPOINT, DEFAULT_MAX_OUTPUT_TOKENS, DEFAULT_MODEL, DEFAULT_NAME, DEFAULT_PROMPT, DOMAIN, OAUTH_DISCOVERY_URL, OAUTH_SCOPE
+from .const import CLIENT_ID, CONF_ACCESS_TOKEN, CONF_EXPIRES, CONF_MAX_OUTPUT_TOKENS, CONF_MODEL, CONF_PROMPT, CONF_REFRESH_TOKEN, CONF_TOKEN_ENDPOINT, DEFAULT_MAX_OUTPUT_TOKENS, DEFAULT_MODEL, DEFAULT_NAME, DEFAULT_PROMPT, DOMAIN, MODEL_OPTIONS, OAUTH_DISCOVERY_URL, OAUTH_SCOPE
 from .xai_client import create_response, text_part
 
 DEVICE_GRANT = "urn:ietf:params:oauth:grant-type:device_code"
+MODEL_SELECTOR = SelectSelector(
+    SelectSelectorConfig(options=list(MODEL_OPTIONS), mode=SelectSelectorMode.DROPDOWN)
+)
 
 
 class XAIOAuthConfigFlow(ConfigFlow, domain=DOMAIN):
@@ -38,7 +42,7 @@ class XAIOAuthConfigFlow(ConfigFlow, domain=DOMAIN):
         data = {**entry.data, **entry.options} if entry else {}
         return vol.Schema({
             vol.Optional("name", default=entry.title if entry else DEFAULT_NAME): str,
-            vol.Optional(CONF_MODEL, default=data.get(CONF_MODEL, DEFAULT_MODEL)): str,
+            vol.Optional(CONF_MODEL, default=data.get(CONF_MODEL, DEFAULT_MODEL)): MODEL_SELECTOR,
             vol.Optional(CONF_PROMPT, default=data.get(CONF_PROMPT, DEFAULT_PROMPT)): str,
             vol.Optional(CONF_MAX_OUTPUT_TOKENS, default=data.get(CONF_MAX_OUTPUT_TOKENS, DEFAULT_MAX_OUTPUT_TOKENS)): int,
         })
@@ -143,7 +147,7 @@ class XAIOAuthOptionsFlow(OptionsFlow):
         data = {**self.config_entry.data, **self.config_entry.options}
         schema = vol.Schema({
             vol.Optional("name", default=self.config_entry.title): str,
-            vol.Optional(CONF_MODEL, default=data.get(CONF_MODEL, DEFAULT_MODEL)): str,
+            vol.Optional(CONF_MODEL, default=data.get(CONF_MODEL, DEFAULT_MODEL)): MODEL_SELECTOR,
             vol.Optional(CONF_PROMPT, default=data.get(CONF_PROMPT, DEFAULT_PROMPT)): str,
             vol.Optional(CONF_MAX_OUTPUT_TOKENS, default=data.get(CONF_MAX_OUTPUT_TOKENS, DEFAULT_MAX_OUTPUT_TOKENS)): int,
         })
