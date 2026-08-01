@@ -5,9 +5,9 @@
   "config_flow": true,
   "dependencies": ["conversation", "http"],
   "documentation": "https://github.com/hebs/xai-oauth-conversation",
-  "issue_tracker": "https://github.com/hebs/xai-oauth-conversation/issues",
   "integration_type": "service",
   "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/hebs/xai-oauth-conversation/issues",
   "requirements": [],
-  "version": "0.1.0"
+  "version": "0.1.1"
 }

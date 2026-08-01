@@ -85,3 +85,5 @@ Remove the integration from **Settings → Devices & services**, then uninstall 
 ## License
 
 MIT
+
+The xAI brand icon is sourced from the MIT-licensed [Lobe Icons](https://github.com/lobehub/lobe-icons) project. xAI and Grok are trademarks of their respective owner.
