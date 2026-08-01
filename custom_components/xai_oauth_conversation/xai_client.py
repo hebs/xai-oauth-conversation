@@ -4,7 +4,7 @@ from __future__ import annotations
 import base64
 import json
 import time
-from collections.abc import AsyncIterator, Callable
+from collections.abc import AsyncGenerator, AsyncIterable, AsyncIterator, Callable
 from dataclasses import dataclass
 from typing import Any
 
@@ -169,3 +169,90 @@ async def create_tool_response(hass: HomeAssistant, entry: ConfigEntry, *, model
                 result = {"error": type(err).__name__, "error_text": str(err)}
             input_items.append({"type": "function_call_output", "call_id": call.id, "output": json_dumps(result)})
     raise XAIOAuthError("Too many tool iterations")
+
+
+async def transcribe_audio(
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    *,
+    audio: AsyncIterable[bytes],
+    filename: str,
+    content_type: str,
+    language: str,
+) -> str:
+    """Transcribe an audio stream with xAI STT."""
+    token = await refresh_token(hass, entry)
+    audio_bytes = bytearray()
+    async for chunk in audio:
+        audio_bytes.extend(chunk)
+    if not audio_bytes:
+        raise XAIOAuthError("No audio received")
+
+    form = aiohttp.FormData()
+    form.add_field("format", "true")
+    form.add_field("language", language.split("-", 1)[0].lower())
+    # xAI requires the file field to be the final multipart field.
+    form.add_field(
+        "file",
+        bytes(audio_bytes),
+        filename=filename,
+        content_type=content_type,
+    )
+    session = async_get_clientsession(hass)
+    async with session.post(
+        f"{API_BASE_URL}/stt",
+        data=form,
+        headers={"Authorization": f"Bearer {token}"},
+        timeout=aiohttp.ClientTimeout(total=180),
+    ) as resp:
+        text = await resp.text()
+        if resp.status >= 400:
+            raise XAIOAuthError(f"xAI STT failed ({resp.status}): {text[:500]}")
+    try:
+        payload = json.loads(text)
+    except json.JSONDecodeError as err:
+        raise XAIOAuthError("xAI STT returned invalid JSON") from err
+    transcript = payload.get("text")
+    if not isinstance(transcript, str):
+        raise XAIOAuthError("xAI STT response was missing transcript text")
+    return transcript
+
+
+async def stream_speech(
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    *,
+    text: str,
+    voice: str,
+    language: str,
+    speed: float,
+    streaming_latency: int,
+) -> AsyncGenerator[bytes]:
+    """Stream MP3 speech audio from xAI TTS."""
+    token = await refresh_token(hass, entry)
+    payload = {
+        "text": text,
+        "voice_id": voice,
+        "language": language,
+        "speed": speed,
+        "optimize_streaming_latency": streaming_latency,
+        "output_format": {
+            "codec": "mp3",
+            "sample_rate": 24000,
+            "bit_rate": 128000,
+        },
+    }
+    session = async_get_clientsession(hass)
+    async with session.post(
+        f"{API_BASE_URL}/tts",
+        json=payload,
+        headers={"Authorization": f"Bearer {token}"},
+        timeout=aiohttp.ClientTimeout(total=180),
+    ) as resp:
+        if resp.status >= 400:
+            raise XAIOAuthError(
+                f"xAI TTS failed ({resp.status}): {(await resp.text())[:500]}"
+            )
+        async for chunk in resp.content.iter_chunked(16 * 1024):
+            if chunk:
+                yield chunk

@@ -20,6 +20,12 @@ CONF_TOKEN_ENDPOINT = "token_endpoint"
 CONF_MODEL = "model"
 CONF_PROMPT = "prompt"
 CONF_MAX_OUTPUT_TOKENS = "max_output_tokens"
+CONF_STT_ENABLED = "stt_enabled"
+CONF_TTS_ENABLED = "tts_enabled"
+CONF_TTS_VOICE = "tts_voice"
+CONF_TTS_LANGUAGE = "tts_language"
+CONF_TTS_SPEED = "tts_speed"
+CONF_TTS_STREAMING_LATENCY = "tts_streaming_latency"
 
 DEFAULT_NAME = "xAI OAuth (Grok)"
 DEFAULT_MODEL = "grok-4.20-0309-reasoning"
@@ -36,6 +42,28 @@ MODEL_OPTIONS = (
 )
 DEFAULT_PROMPT = "You are a helpful voice assistant for Home Assistant. Answer concisely and naturally."
 DEFAULT_MAX_OUTPUT_TOKENS = 1000
+DEFAULT_STT_ENABLED = True
+DEFAULT_TTS_ENABLED = True
+DEFAULT_TTS_VOICE = "eve"
+DEFAULT_TTS_LANGUAGE = "en"
+DEFAULT_TTS_SPEED = 1.0
+DEFAULT_TTS_STREAMING_LATENCY = 1
+
+STT_LANGUAGES = (
+    "ar", "cs", "da", "de", "en", "es", "fa", "fil", "fr", "hi", "id",
+    "it", "ja", "ko", "mk", "ms", "nl", "pl", "pt", "ro", "ru", "sv",
+    "th", "tr", "vi",
+)
+TTS_LANGUAGES = (
+    "auto", "ar-AE", "ar-EG", "ar-SA", "bn", "de", "en", "es-ES", "es-MX",
+    "fr", "hi", "id", "it", "ja", "ko", "pt-BR", "pt-PT", "ru", "tr", "vi",
+    "zh",
+)
+TTS_VOICES = (
+    "altair", "ara", "atlas", "carina", "castor", "celeste", "cosmo", "eve",
+    "helios", "helix", "iris", "kepler", "leo", "lumen", "luna", "lux", "naksh",
+    "orion", "perseus", "rex", "rigel", "sal", "sirius", "ursa", "zagan", "zenith",
+)
 
 CLIENT_ID = "b1a00492-073a-47ea-816f-4c329264a828"
 OAUTH_DISCOVERY_URL = "https://auth.x.ai/.well-known/openid-configuration"

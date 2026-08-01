@@ -17,7 +17,7 @@ from homeassistant.helpers.typing import ConfigType
 from .const import CONF_MAX_OUTPUT_TOKENS, CONF_MODEL, CONF_PROMPT, DEFAULT_MAX_OUTPUT_TOKENS, DEFAULT_MODEL, DEFAULT_PROMPT, DOMAIN, entry_setting
 from .xai_client import create_response, image_bytes_part, image_url_part, text_part
 
-PLATFORMS = (Platform.CONVERSATION,)
+PLATFORMS = (Platform.CONVERSATION, Platform.STT, Platform.TTS)
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 

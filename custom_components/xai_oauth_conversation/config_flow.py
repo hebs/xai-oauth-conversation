@@ -11,12 +11,49 @@ from homeassistant.config_entries import ConfigEntry, ConfigFlow, ConfigFlowResu
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.selector import SelectSelector, SelectSelectorConfig, SelectSelectorMode
 
-from .const import CLIENT_ID, CONF_ACCESS_TOKEN, CONF_EXPIRES, CONF_MAX_OUTPUT_TOKENS, CONF_MODEL, CONF_PROMPT, CONF_REFRESH_TOKEN, CONF_TOKEN_ENDPOINT, DEFAULT_MAX_OUTPUT_TOKENS, DEFAULT_MODEL, DEFAULT_NAME, DEFAULT_PROMPT, DOMAIN, MODEL_OPTIONS, OAUTH_DISCOVERY_URL, OAUTH_SCOPE
+from .const import (
+    CLIENT_ID,
+    CONF_ACCESS_TOKEN,
+    CONF_EXPIRES,
+    CONF_MAX_OUTPUT_TOKENS,
+    CONF_MODEL,
+    CONF_PROMPT,
+    CONF_REFRESH_TOKEN,
+    CONF_STT_ENABLED,
+    CONF_TOKEN_ENDPOINT,
+    CONF_TTS_ENABLED,
+    CONF_TTS_LANGUAGE,
+    CONF_TTS_SPEED,
+    CONF_TTS_STREAMING_LATENCY,
+    CONF_TTS_VOICE,
+    DEFAULT_MAX_OUTPUT_TOKENS,
+    DEFAULT_MODEL,
+    DEFAULT_NAME,
+    DEFAULT_PROMPT,
+    DEFAULT_STT_ENABLED,
+    DEFAULT_TTS_ENABLED,
+    DEFAULT_TTS_LANGUAGE,
+    DEFAULT_TTS_SPEED,
+    DEFAULT_TTS_STREAMING_LATENCY,
+    DEFAULT_TTS_VOICE,
+    DOMAIN,
+    MODEL_OPTIONS,
+    OAUTH_DISCOVERY_URL,
+    OAUTH_SCOPE,
+    TTS_LANGUAGES,
+    TTS_VOICES,
+)
 from .xai_client import create_response, text_part
 
 DEVICE_GRANT = "urn:ietf:params:oauth:grant-type:device_code"
 MODEL_SELECTOR = SelectSelector(
     SelectSelectorConfig(options=list(MODEL_OPTIONS), mode=SelectSelectorMode.DROPDOWN)
+)
+VOICE_SELECTOR = SelectSelector(
+    SelectSelectorConfig(options=list(TTS_VOICES), mode=SelectSelectorMode.DROPDOWN)
+)
+LANGUAGE_SELECTOR = SelectSelector(
+    SelectSelectorConfig(options=list(TTS_LANGUAGES), mode=SelectSelectorMode.DROPDOWN)
 )
 
 
@@ -34,6 +71,14 @@ class XAIOAuthConfigFlow(ConfigFlow, domain=DOMAIN):
                 CONF_MODEL: user_input.get(CONF_MODEL, DEFAULT_MODEL),
                 CONF_PROMPT: user_input.get(CONF_PROMPT, DEFAULT_PROMPT),
                 CONF_MAX_OUTPUT_TOKENS: user_input.get(CONF_MAX_OUTPUT_TOKENS, DEFAULT_MAX_OUTPUT_TOKENS),
+                CONF_STT_ENABLED: user_input.get(CONF_STT_ENABLED, DEFAULT_STT_ENABLED),
+                CONF_TTS_ENABLED: user_input.get(CONF_TTS_ENABLED, DEFAULT_TTS_ENABLED),
+                CONF_TTS_VOICE: user_input.get(CONF_TTS_VOICE, DEFAULT_TTS_VOICE),
+                CONF_TTS_LANGUAGE: user_input.get(CONF_TTS_LANGUAGE, DEFAULT_TTS_LANGUAGE),
+                CONF_TTS_SPEED: user_input.get(CONF_TTS_SPEED, DEFAULT_TTS_SPEED),
+                CONF_TTS_STREAMING_LATENCY: user_input.get(
+                    CONF_TTS_STREAMING_LATENCY, DEFAULT_TTS_STREAMING_LATENCY
+                ),
             }
             return await self._async_start_device_auth()
         return self.async_show_form(step_id="user", data_schema=self._settings_schema())
@@ -45,6 +90,12 @@ class XAIOAuthConfigFlow(ConfigFlow, domain=DOMAIN):
             vol.Optional(CONF_MODEL, default=data.get(CONF_MODEL, DEFAULT_MODEL)): MODEL_SELECTOR,
             vol.Optional(CONF_PROMPT, default=data.get(CONF_PROMPT, DEFAULT_PROMPT)): str,
             vol.Optional(CONF_MAX_OUTPUT_TOKENS, default=data.get(CONF_MAX_OUTPUT_TOKENS, DEFAULT_MAX_OUTPUT_TOKENS)): int,
+            vol.Optional(CONF_STT_ENABLED, default=data.get(CONF_STT_ENABLED, DEFAULT_STT_ENABLED)): bool,
+            vol.Optional(CONF_TTS_ENABLED, default=data.get(CONF_TTS_ENABLED, DEFAULT_TTS_ENABLED)): bool,
+            vol.Optional(CONF_TTS_VOICE, default=data.get(CONF_TTS_VOICE, DEFAULT_TTS_VOICE)): VOICE_SELECTOR,
+            vol.Optional(CONF_TTS_LANGUAGE, default=data.get(CONF_TTS_LANGUAGE, DEFAULT_TTS_LANGUAGE)): LANGUAGE_SELECTOR,
+            vol.Optional(CONF_TTS_SPEED, default=data.get(CONF_TTS_SPEED, DEFAULT_TTS_SPEED)): vol.All(vol.Coerce(float), vol.Range(min=0.7, max=1.5)),
+            vol.Optional(CONF_TTS_STREAMING_LATENCY, default=data.get(CONF_TTS_STREAMING_LATENCY, DEFAULT_TTS_STREAMING_LATENCY)): vol.In((0, 1, 2)),
         })
 
     async def _async_start_device_auth(self) -> ConfigFlowResult:
@@ -107,6 +158,12 @@ class XAIOAuthConfigFlow(ConfigFlow, domain=DOMAIN):
             CONF_MODEL: self._oauth_input[CONF_MODEL],
             CONF_PROMPT: self._oauth_input[CONF_PROMPT],
             CONF_MAX_OUTPUT_TOKENS: self._oauth_input[CONF_MAX_OUTPUT_TOKENS],
+            CONF_STT_ENABLED: self._oauth_input[CONF_STT_ENABLED],
+            CONF_TTS_ENABLED: self._oauth_input[CONF_TTS_ENABLED],
+            CONF_TTS_VOICE: self._oauth_input[CONF_TTS_VOICE],
+            CONF_TTS_LANGUAGE: self._oauth_input[CONF_TTS_LANGUAGE],
+            CONF_TTS_SPEED: self._oauth_input[CONF_TTS_SPEED],
+            CONF_TTS_STREAMING_LATENCY: self._oauth_input[CONF_TTS_STREAMING_LATENCY],
         }
         temp_entry = type("TempEntry", (), {"data": data, "title": self._oauth_input["name"]})()
         try:
@@ -121,13 +178,24 @@ class XAIOAuthConfigFlow(ConfigFlow, domain=DOMAIN):
     async def async_step_reconfigure(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         entry = self._get_reconfigure_entry()
         if user_input is not None:
-            updates = {CONF_MODEL: user_input[CONF_MODEL], CONF_PROMPT: user_input[CONF_PROMPT], CONF_MAX_OUTPUT_TOKENS: user_input[CONF_MAX_OUTPUT_TOKENS]}
+            updates = {key: value for key, value in user_input.items() if key != "name"}
             return self.async_update_reload_and_abort(entry, data_updates=updates, title=user_input.get("name", entry.title))
         return self.async_show_form(step_id="reconfigure", data_schema=self._settings_schema(entry))
 
     async def async_step_reauth(self, entry_data: dict[str, Any]) -> ConfigFlowResult:
         entry = self._get_reauth_entry()
-        self._oauth_input = {"name": entry.title, CONF_MODEL: entry_data.get(CONF_MODEL, DEFAULT_MODEL), CONF_PROMPT: entry_data.get(CONF_PROMPT, DEFAULT_PROMPT), CONF_MAX_OUTPUT_TOKENS: entry_data.get(CONF_MAX_OUTPUT_TOKENS, DEFAULT_MAX_OUTPUT_TOKENS)}
+        self._oauth_input = {
+            "name": entry.title,
+            CONF_MODEL: entry_data.get(CONF_MODEL, DEFAULT_MODEL),
+            CONF_PROMPT: entry_data.get(CONF_PROMPT, DEFAULT_PROMPT),
+            CONF_MAX_OUTPUT_TOKENS: entry_data.get(CONF_MAX_OUTPUT_TOKENS, DEFAULT_MAX_OUTPUT_TOKENS),
+            CONF_STT_ENABLED: entry_data.get(CONF_STT_ENABLED, DEFAULT_STT_ENABLED),
+            CONF_TTS_ENABLED: entry_data.get(CONF_TTS_ENABLED, DEFAULT_TTS_ENABLED),
+            CONF_TTS_VOICE: entry_data.get(CONF_TTS_VOICE, DEFAULT_TTS_VOICE),
+            CONF_TTS_LANGUAGE: entry_data.get(CONF_TTS_LANGUAGE, DEFAULT_TTS_LANGUAGE),
+            CONF_TTS_SPEED: entry_data.get(CONF_TTS_SPEED, DEFAULT_TTS_SPEED),
+            CONF_TTS_STREAMING_LATENCY: entry_data.get(CONF_TTS_STREAMING_LATENCY, DEFAULT_TTS_STREAMING_LATENCY),
+        }
         return await self._async_start_device_auth()
 
     @staticmethod
@@ -150,5 +218,11 @@ class XAIOAuthOptionsFlow(OptionsFlow):
             vol.Optional(CONF_MODEL, default=data.get(CONF_MODEL, DEFAULT_MODEL)): MODEL_SELECTOR,
             vol.Optional(CONF_PROMPT, default=data.get(CONF_PROMPT, DEFAULT_PROMPT)): str,
             vol.Optional(CONF_MAX_OUTPUT_TOKENS, default=data.get(CONF_MAX_OUTPUT_TOKENS, DEFAULT_MAX_OUTPUT_TOKENS)): int,
+            vol.Optional(CONF_STT_ENABLED, default=data.get(CONF_STT_ENABLED, DEFAULT_STT_ENABLED)): bool,
+            vol.Optional(CONF_TTS_ENABLED, default=data.get(CONF_TTS_ENABLED, DEFAULT_TTS_ENABLED)): bool,
+            vol.Optional(CONF_TTS_VOICE, default=data.get(CONF_TTS_VOICE, DEFAULT_TTS_VOICE)): VOICE_SELECTOR,
+            vol.Optional(CONF_TTS_LANGUAGE, default=data.get(CONF_TTS_LANGUAGE, DEFAULT_TTS_LANGUAGE)): LANGUAGE_SELECTOR,
+            vol.Optional(CONF_TTS_SPEED, default=data.get(CONF_TTS_SPEED, DEFAULT_TTS_SPEED)): vol.All(vol.Coerce(float), vol.Range(min=0.7, max=1.5)),
+            vol.Optional(CONF_TTS_STREAMING_LATENCY, default=data.get(CONF_TTS_STREAMING_LATENCY, DEFAULT_TTS_STREAMING_LATENCY)): vol.In((0, 1, 2)),
         })
         return self.async_show_form(step_id="init", data_schema=schema)
