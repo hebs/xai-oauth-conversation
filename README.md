@@ -46,8 +46,8 @@ Copy `custom_components/xai_oauth_conversation` into `/config/custom_components/
 - **Speech-to-text / Text-to-speech:** Each voice platform can be independently enabled or disabled.
 - **TTS voice:** Choose one of xAI's built-in voices. `eve` is the default.
 - **TTS language:** Select a supported language or `auto` for automatic detection.
-- **TTS speed:** Set a multiplier from `0.7` to `1.5`.
-- **Streaming latency:** `0` prioritizes quality, `1` balances latency and quality, and `2` minimizes time to first audio.
+- **TTS speed:** Set a multiplier from `0.7` to `1.5`. The default is `1.35`.
+- **Streaming latency:** `0` prioritizes quality, `1` balances latency and quality, and `2` minimizes time to first audio. The default is `2`.
 
 After setup, select the new **xAI OAuth** STT and TTS entities in
 **Settings → Voice assistants → your pipeline**. Existing config entries receive
