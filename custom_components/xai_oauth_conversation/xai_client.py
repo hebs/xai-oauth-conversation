@@ -19,6 +19,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.json import json_dumps
 
 from .const import API_BASE_URL, CLIENT_ID, CONF_ACCESS_TOKEN, CONF_EXPIRES, CONF_REFRESH_TOKEN, CONF_TOKEN_ENDPOINT, LOGGER
+from .schema import normalize_tool_schema
 
 MAX_TOOL_ITERATIONS = 10
 
@@ -105,7 +106,8 @@ async def _iter_sse(resp: aiohttp.ClientResponse) -> AsyncIterator[dict[str, Any
 
 
 def _format_tool(tool: llm.Tool, serializer: Callable[[Any], Any] | None) -> dict[str, Any]:
-    return {"type": "function", "name": tool.name, "description": tool.description, "parameters": convert(tool.parameters, custom_serializer=serializer), "strict": False}
+    schema = convert(tool.parameters, custom_serializer=serializer)
+    return {"type": "function", "name": tool.name, "description": tool.description, "parameters": normalize_tool_schema(schema), "strict": False}
 
 
 def _parse_tool_call(item: dict[str, Any]) -> llm.ToolInput | None:
