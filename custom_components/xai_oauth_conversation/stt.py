@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 from collections.abc import AsyncIterable
+import io
 import logging
+import wave
 
 from homeassistant.components.stt import (
     AudioBitRates,
@@ -23,6 +25,23 @@ from .const import CONF_STT_ENABLED, DEFAULT_STT_ENABLED, STT_LANGUAGES, entry_s
 from .xai_client import XAIOAuthError, transcribe_audio
 
 _LOGGER = logging.getLogger(__name__)
+
+
+async def _wav_audio_stream(
+    metadata: SpeechMetadata, stream: AsyncIterable[bytes]
+) -> AsyncIterable[bytes]:
+    """Wrap Home Assistant's raw PCM stream in a WAV container."""
+    pcm = bytearray()
+    async for chunk in stream:
+        pcm.extend(chunk)
+
+    output = io.BytesIO()
+    with wave.open(output, "wb") as wav_file:
+        wav_file.setnchannels(int(metadata.channel))
+        wav_file.setsampwidth(int(metadata.bit_rate) // 8)
+        wav_file.setframerate(int(metadata.sample_rate))
+        wav_file.writeframes(pcm)
+    yield output.getvalue()
 
 
 async def async_setup_entry(
@@ -78,11 +97,19 @@ class XAIOAuthSTTEntity(SpeechToTextEntity):
     ) -> SpeechResult:
         extension = "wav" if metadata.format == AudioFormats.WAV else "ogg"
         content_type = "audio/wav" if extension == "wav" else "audio/ogg"
+        # Home Assistant passes raw PCM for the WAV/PCM combination. xAI
+        # detects the input type from the uploaded file header, so provide a
+        # real WAV container rather than labeling headerless PCM as audio/wav.
+        audio = (
+            _wav_audio_stream(metadata, stream)
+            if metadata.format == AudioFormats.WAV and metadata.codec == AudioCodecs.PCM
+            else stream
+        )
         try:
             text = await transcribe_audio(
                 self.hass,
                 self.entry,
-                audio=stream,
+                audio=audio,
                 filename=f"assist.{extension}",
                 content_type=content_type,
                 language=metadata.language,
