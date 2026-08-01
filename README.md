@@ -5,12 +5,15 @@ Unofficial Home Assistant custom integration for using Grok through xAI OAuth. I
 ## Features
 
 - Grok conversation agent for Home Assistant Assist
+- xAI speech-to-text for Assist pipelines
+- Streaming xAI text-to-speech with 26 selectable voices
 - Home Assistant LLM tool support for device queries and control
 - xAI device-code sign-in, with no localhost callback
 - Automatic OAuth token refresh
 - `generate_content` service for text generation
 - `analyze_image` service for camera entities, image entities, local files, and URLs
-- Configurable model, system prompt, and maximum output tokens
+- Configurable model, system prompt, maximum output tokens, TTS voice, language,
+  speed, and streaming-latency optimization
 
 ## Requirements and warnings
 
@@ -40,6 +43,21 @@ Copy `custom_components/xai_oauth_conversation` into `/config/custom_components/
 - **Model:** Choose a conversation-capable Grok model from the dropdown. Model availability depends on your xAI account. The default is `grok-4.20-0309-reasoning`.
 - **System prompt:** Instructions applied to conversation and service requests.
 - **Max output tokens:** A response ceiling. `2000` is a good general-purpose starting point; use `1000` for shorter voice replies or `4000` for longer reasoning tasks.
+- **Speech-to-text / Text-to-speech:** Each voice platform can be independently enabled or disabled.
+- **TTS voice:** Choose one of xAI's built-in voices. `eve` is the default.
+- **TTS language:** Select a supported language or `auto` for automatic detection.
+- **TTS speed:** Set a multiplier from `0.7` to `1.5`.
+- **Streaming latency:** `0` prioritizes quality, `1` balances latency and quality, and `2` minimizes time to first audio.
+
+After setup, select the new **xAI OAuth** STT and TTS entities in
+**Settings → Voice assistants → your pipeline**. Existing config entries receive
+both voice entities by default after upgrading and restarting Home Assistant.
+
+The integration sends Assist audio and synthesized text to xAI's hosted Voice
+API. OAuth access to `/v1/stt`, `/v1/tts`, and `/v1/tts/voices` was verified
+with the same `api:access` token used by the conversation agent, but xAI's public
+Voice documentation currently describes API-key authentication. This OAuth use
+remains unofficial and may change.
 
 The setup flow tests the configured model. If the account does not have access, setup ends with a connection error.
 
@@ -77,6 +95,8 @@ Local files can use an absolute path such as `/config/www/snapshot.jpg`, or a pa
 OAuth access and refresh tokens are stored in the Home Assistant config entry. Protect Home Assistant backups and `.storage` files. Never publish copied config entries, logs containing tokens, or long-lived Home Assistant access tokens.
 
 Remote image URLs are fetched by xAI. Camera, image-entity, and local-file images are encoded and sent to xAI for analysis.
+Assist microphone audio is sent to xAI when xAI STT is selected. Text is sent to
+xAI when xAI TTS is selected.
 
 ## Removal
 

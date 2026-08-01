@@ -9,7 +9,13 @@
           "name": "Name",
           "model": "Model",
           "prompt": "System prompt",
-          "max_output_tokens": "Max output tokens"
+          "max_output_tokens": "Max output tokens",
+          "stt_enabled": "Enable xAI speech-to-text",
+          "tts_enabled": "Enable xAI text-to-speech",
+          "tts_voice": "TTS voice",
+          "tts_language": "Default TTS language",
+          "tts_speed": "TTS speed",
+          "tts_streaming_latency": "TTS streaming latency optimization (0-2)"
         }
       },
       "device_auth": {
@@ -26,7 +32,13 @@
           "name": "Name",
           "model": "Model",
           "prompt": "System prompt",
-          "max_output_tokens": "Max output tokens"
+          "max_output_tokens": "Max output tokens",
+          "stt_enabled": "Enable xAI speech-to-text",
+          "tts_enabled": "Enable xAI text-to-speech",
+          "tts_voice": "TTS voice",
+          "tts_language": "Default TTS language",
+          "tts_speed": "TTS speed",
+          "tts_streaming_latency": "TTS streaming latency optimization (0-2)"
         }
       }
     },
@@ -52,7 +64,13 @@
           "name": "Name",
           "model": "Model",
           "prompt": "System prompt",
-          "max_output_tokens": "Max output tokens"
+          "max_output_tokens": "Max output tokens",
+          "stt_enabled": "Enable xAI speech-to-text",
+          "tts_enabled": "Enable xAI text-to-speech",
+          "tts_voice": "TTS voice",
+          "tts_language": "Default TTS language",
+          "tts_speed": "TTS speed",
+          "tts_streaming_latency": "TTS streaming latency optimization (0-2)"
         }
       }
     }
