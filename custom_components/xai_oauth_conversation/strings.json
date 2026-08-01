@@ -1,0 +1,46 @@
+{
+  "config": {
+    "flow_title": "{name}",
+    "step": {
+      "user": {
+        "title": "Authenticate",
+        "description": "Set the assistant defaults, then continue to xAI OAuth sign-in.",
+        "data": {
+          "name": "Name",
+          "model": "Model",
+          "prompt": "System prompt",
+          "max_output_tokens": "Max output tokens"
+        }
+      },
+      "device_auth": {
+        "title": "xAI sign-in",
+        "description": "1. Open [the xAI device sign-in page]({verification_url}).\n2. Enter code **{user_code}** if it is not prefilled.\n3. Approve access. xAI may label the app as Grok Build.\n4. Return here, check the box, and submit.",
+        "data": {
+          "authorization_complete": "I completed xAI authorization"
+        }
+      },
+      "reconfigure": {
+        "title": "Settings",
+        "description": "Update the assistant defaults.",
+        "data": {
+          "name": "Name",
+          "model": "Model",
+          "prompt": "System prompt",
+          "max_output_tokens": "Max output tokens"
+        }
+      }
+    },
+    "error": {
+      "authorization_not_complete": "Complete authorization before continuing.",
+      "authorization_pending": "xAI has not confirmed authorization yet. Finish approval, then submit again."
+    },
+    "abort": {
+      "oauth_start_failed": "Could not start xAI OAuth: {details}",
+      "oauth_failed": "xAI OAuth failed: {details}",
+      "oauth_error": "xAI returned an invalid OAuth response.",
+      "cannot_connect": "Authenticated, but the xAI API test request failed. Verify that your account has OAuth model access and try again.",
+      "reconfigure_successful": "Settings updated.",
+      "reauth_successful": "xAI OAuth authentication updated."
+    }
+  }
+}

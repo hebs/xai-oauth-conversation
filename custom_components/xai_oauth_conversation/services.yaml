@@ -1,0 +1,82 @@
+generate_content:
+  name: Generate content
+  description: Generate text through xAI using OAuth.
+  fields:
+    config_entry:
+      name: Config entry
+      required: true
+      selector:
+        config_entry:
+          integration: xai_oauth_conversation
+    prompt:
+      name: Prompt
+      required: true
+      selector:
+        text:
+          multiline: true
+    model:
+      name: Model
+      required: false
+      example: grok-4.20-0309-reasoning
+      selector:
+        text:
+    max_output_tokens:
+      name: Max output tokens
+      required: false
+      selector:
+        number:
+          min: 1
+          max: 64000
+analyze_image:
+  name: Analyze image
+  description: Analyze an image file, URL, image entity, or camera entity through xAI OAuth.
+  fields:
+    config_entry:
+      name: Config entry
+      required: true
+      selector:
+        config_entry:
+          integration: xai_oauth_conversation
+    prompt:
+      name: Prompt
+      required: true
+      selector:
+        text:
+          multiline: true
+    system_prompt:
+      name: System prompt
+      required: false
+      selector:
+        text:
+          multiline: true
+    model:
+      name: Model
+      required: false
+      selector:
+        text:
+    image_file:
+      name: Image file
+      required: false
+      selector:
+        text:
+          multiple: true
+    image_url:
+      name: Image URL
+      required: false
+      selector:
+        text:
+          multiple: true
+    entity_id:
+      name: Image/camera entity
+      required: false
+      selector:
+        entity:
+          domain: [image, camera]
+          multiple: true
+    max_output_tokens:
+      name: Max output tokens
+      required: false
+      selector:
+        number:
+          min: 1
+          max: 64000
