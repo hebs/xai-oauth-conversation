@@ -55,7 +55,7 @@ STT_LANGUAGES = (
     "th", "tr", "vi",
 )
 TTS_LANGUAGES = (
-    "auto", "ar-AE", "ar-EG", "ar-SA", "bn", "de", "en", "es-ES", "es-MX",
+    "auto", "ar-AE", "ar-EG", "ar-SA", "bn", "de", "en", "en-GB", "es-ES", "es-MX",
     "fr", "hi", "id", "it", "ja", "ko", "pt-BR", "pt-PT", "ru", "tr", "vi",
     "zh",
 )

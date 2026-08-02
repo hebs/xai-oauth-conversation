@@ -44,8 +44,10 @@ Copy `custom_components/xai_oauth_conversation` into `/config/custom_components/
 - **System prompt:** Instructions applied to conversation and service requests.
 - **Max output tokens:** A response ceiling. `2000` is a good general-purpose starting point; use `1000` for shorter voice replies or `4000` for longer reasoning tasks.
 - **Speech-to-text / Text-to-speech:** Each voice platform can be independently enabled or disabled.
-- **TTS voice:** Choose one of xAI's built-in voices. `eve` is the default.
+- **TTS voice:** Choose one of xAI's built-in voices. `eve` is the default; `leo`
+  provides a British male voice.
 - **TTS language:** Select a supported language or `auto` for automatic detection.
+  UK English is available as `en-GB`.
 - **TTS speed:** Set a multiplier from `0.7` to `1.5`. The default is `1.35`.
 - **Streaming latency:** `0` prioritizes quality, `1` balances latency and quality, and `2` minimizes time to first audio. The default is `2`.
 
