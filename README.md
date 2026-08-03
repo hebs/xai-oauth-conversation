@@ -109,3 +109,9 @@ Remove the integration from **Settings → Devices & services**, then uninstall 
 MIT
 
 The xAI brand icon is sourced from the MIT-licensed [Lobe Icons](https://github.com/lobehub/lobe-icons) project. xAI and Grok are trademarks of their respective owner.
+
+## Support St. Jude Children’s Research Hospital
+
+I’m raising funds for St. Jude to help support its mission: advancing cures and prevention for pediatric catastrophic diseases while ensuring families never receive a bill from St. Jude for treatment, travel, housing, or food.
+
+[Donate to my St. Jude fundraiser](https://fundraising.stjude.org/site/TR?px=9314303&fr_id=162728&pg=personal)
