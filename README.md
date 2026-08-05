@@ -51,6 +51,15 @@ Copy `custom_components/xai_oauth_conversation` into `/config/custom_components/
 - **TTS speed:** Set a multiplier from `0.7` to `1.5`. The default is `1.35`.
 - **Streaming latency:** `0` prioritizes quality, `1` balances latency and quality, and `2` minimizes time to first audio. The default is `2`.
 
+### Available TTS voices
+
+The integration currently offers all 26 xAI voices:
+
+`altair`, `ara`, `atlas`, `carina`, `castor`, `celeste`, `cosmo`, `eve`,
+`helios`, `helix`, `iris`, `kepler`, `leo`, `lumen`, `luna`, `lux`, `naksh`,
+`orion`, `perseus`, `rex`, `rigel`, `sal`, `sirius`, `ursa`, `zagan`, and
+`zenith`.
+
 After setup, select the new **xAI OAuth** STT and TTS entities in
 **Settings → Voice assistants → your pipeline**. Existing config entries receive
 both voice entities by default after upgrading and restarting Home Assistant.
@@ -62,6 +71,26 @@ Voice documentation currently describes API-key authentication. This OAuth use
 remains unofficial and may change.
 
 The setup flow tests the configured model. If the account does not have access, setup ends with a connection error.
+
+## Screenshots
+
+### Integration and entities
+
+![xAI OAuth Conversation integration overview](docs/screenshots/01-integration-overview.png)
+
+![Conversation, speech-to-text, and text-to-speech entities](docs/screenshots/02-entities.png)
+
+### Integration options
+
+![Model, prompt, speech-to-text, and text-to-speech options](docs/screenshots/03-integration-options.png)
+
+### Assist pipeline
+
+![xAI OAuth conversation, speech-to-text, and text-to-speech configured in an Assist pipeline](docs/screenshots/04-assist-pipeline.png)
+
+### Conversation example
+
+![Grok answering Home Assistant device questions through Assist](docs/screenshots/05-assist-conversation.png)
 
 ## Services
 
